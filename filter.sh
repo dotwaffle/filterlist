@@ -61,7 +61,7 @@ for i in $IP_LIST
 do
 	if [ "$TYPE" == "juniper" ]
 	then
-		echo "set policy-options policy-statement $FILTERNAME from route-filter $i exact"
+		echo "set policy-options policy-statement $FILTERNAME term auto-generated from route-filter $i exact"
 	elif [ "$TYPE" == "cisco" ]
 	then
 		echo "ip prefix-list $FILTERNAME $INC permit $i"
@@ -70,3 +70,10 @@ do
 		echo $i
 	fi
 done
+
+# Tell the Juniper router to accept those prefixes
+if [ "$TYPE" == "juniper" ]
+then
+	echo "set policy-options policy-statement $FILTERNAME term auto-generated then accept"
+fi
+
