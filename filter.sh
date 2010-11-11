@@ -38,6 +38,11 @@ while [[ $1 = -* ]]; do
 	esac
 done
 
+if [ $# -lt 1 ]
+	then usage
+	exit 1
+fi
+
 # Do we have an AS-SET or an ASN?
 IS_SET=`echo $1 | cut -c3 | grep -`
 
