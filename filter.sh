@@ -6,7 +6,7 @@ usage()
 {
 	echo "$0: A filterlist generator"
 	echo "Usage: $0 [OPTS] AS-SET"
-	echo "    -t | --type [juniper|cisco]"
+	echo "    -t | --type [juniper | cisco | brocade]"
 	echo "    -n | --name [Filter Name]"
 }
 
@@ -71,6 +71,9 @@ do
 	then
 		echo "ip prefix-list $FILTERNAME $INC permit $i"
 		let INC=INC+10
+	elif [ "$TYPE" == "brocade" ]
+	then
+		echo "ip prefix-list $FILTERNAME permit $i"
 	else
 		echo $i
 	fi
