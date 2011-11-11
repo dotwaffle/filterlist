@@ -6,7 +6,7 @@ usage()
 {
 	echo "$0: A filterlist generator"
 	echo "Usage: $0 [OPTS] AS-SET"
-	echo "    -t | --type [juniper | cisco | brocade]"
+	echo "    -t | --type [juniper | cisco | brocade | force10]"
 	echo "    -n | --name [Filter Name]"
 }
 
@@ -61,6 +61,12 @@ do
 	IP_LIST+=$(echo " ")
 done
 
+# If we're on Force10, create the prefix-list
+if [ "$TYPE" == "force10" ]
+then
+	echo "ip prefix-list $FILTERNAME"
+fi
+
 # Format the output nicely
 for i in $IP_LIST
 do
@@ -74,6 +80,9 @@ do
 	elif [ "$TYPE" == "brocade" ]
 	then
 		echo "ip prefix-list $FILTERNAME permit $i"
+	elif [ "$TYPE" == "force10" ]
+	then
+		echo " seq $INC permit $i"
 	else
 		echo $i
 	fi
