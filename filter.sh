@@ -51,10 +51,6 @@ while [[ $1 = -* ]]; do
 			WHOISSERVER="$2"
 			shift 2
 			;;
-		--help)
-			usage
-			exit 1
-			;;
 		--ipv4)
 			IP_VERSION="4"
 			shift
@@ -62,6 +58,10 @@ while [[ $1 = -* ]]; do
 		--ipv6)
 			IP_VERSION="6"
 			shift
+			;;
+		--help)
+			usage
+			exit 1
 			;;
 		*)
 			echo "Error: Unknown option: $1" >&2
