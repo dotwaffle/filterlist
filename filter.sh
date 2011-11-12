@@ -63,7 +63,7 @@ fi
 # Find out which prefixes are contained within that AS number
 for i in $AS_LIST
 do
-	IP_LIST+=$(whois -h $WHOISSERVER -- "-i origin $i" | grep route: | cut -f 2 -d: | sed 's/ //g'`)
+	IP_LIST+=$(whois -h $WHOISSERVER -- "-i origin $i" | grep route: | cut -f 2 -d: | sed 's/ //g')
 	IP_LIST+=$(echo " ")
 done
 
