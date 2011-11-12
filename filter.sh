@@ -55,15 +55,15 @@ IS_SET=$(echo $1 | cut -c3 | grep -)
 # If we've got an AS-SET, use the handy !i and ,1 commands on RADB
 if [[ "-" == "$IS_SET" ]]
 then
-	AS_LIST=$(whois -h $WHOISSERVER \!i$1,1 | sed '/^\[/d' | sed 2\!d)
+	AS_LIST=$(whois -h whois.radb.net \!i$1,1 | sed '/^\[/d' | sed 2\!d)
 else
 	AS_LIST=$1
 fi
 
-# Find out which prefixes are contained within that AS number, from RADB
+# Find out which prefixes are contained within that AS number
 for i in $AS_LIST
 do
-	IP_LIST+=$(whois -h $WHOISSERVER \!g$i | sed '/^\[/d' | sed 2\!d)
+	IP_LIST+=$(whois -h $WHOISSERVER -- "-i origin $i" | grep route: | cut -f 2 -d: | sed 's/ //g'`)
 	IP_LIST+=$(echo " ")
 done
 
