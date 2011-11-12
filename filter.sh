@@ -9,6 +9,8 @@ usage()
 	echo "    -t | --type [juniper | cisco | brocade | force10]"
 	echo "    -n | --name [Filter Name]"
 	echo "    -h | --host [WHOIS server]"
+	echo "         --ipv4"
+	echo "         --ipv6"
 }
 
 # Initialise some variables, to make it safe to use
@@ -16,6 +18,7 @@ FILTERNAME="filter"
 INC=10
 IP_LIST=""
 WHOISSERVER="whois.radb.net"
+IP_VERSION="4"
 
 # Parse the command line options
 while [[ $1 = -* ]]; do
@@ -35,6 +38,14 @@ while [[ $1 = -* ]]; do
 		--help)
 			usage
 			exit 1
+			;;
+		--ipv4)
+			IP_VERSION="4"
+			shift
+			;;
+		--ipv6)
+			IP_VERSION="6"
+			shift
 			;;
 		*)
 			echo "Error: Unknown option: $1" >&2
@@ -63,7 +74,13 @@ fi
 # Find out which prefixes are contained within that AS number
 for i in $AS_LIST
 do
-	IP_LIST+=$(whois -h $WHOISSERVER -- "-i origin $i" | grep route: | cut -f 2 -d: | sed 's/ //g')
+	if [ "$IP_VERSION" == "4" ]
+	then
+		IP_LIST+=$(whois -h $WHOISSERVER -- "-i origin $i" | grep route: | cut -f 2 -d: | sed 's/ //g')
+	elif [ "$IP_VERSION" == "6" ]
+	then
+		IP_LIST+=$(whois -h $WHOISSERVER -- "-i origin $i" | grep route6: | cut -f 2- -d: | sed 's/ //g')
+	fi
 	IP_LIST+=$(echo " ")
 done
 
