@@ -72,7 +72,7 @@ while [[ $1 = -* ]]; do
 done
 
 # If no arguments, then just show the usage statement
-if [ $# -lt 1 ]
+if [[ $# -lt 1 ]]
 	then usage
 	exit 1
 fi
@@ -91,10 +91,10 @@ fi
 # Find out which prefixes are contained within that AS number
 for i in $AS_LIST
 do
-	if [ "$IP_VERSION" == "4" ]
+	if [[ "$IP_VERSION" == "4" ]]
 	then
 		IP_LIST+=$(whois -h $WHOISSERVER -- "-i origin $i" | grep ^route: | cut -f 2 -d: | sed 's/ //g')
-	elif [ "$IP_VERSION" == "6" ]
+	elif [[ "$IP_VERSION" == "6" ]]
 	then
 		IP_LIST+=$(whois -h $WHOISSERVER -- "-i origin $i" | grep ^route6: | cut -f 2- -d: | sed 's/ //g')
 	fi
@@ -102,7 +102,7 @@ do
 done
 
 # If we're on Force10, create the prefix-list
-if [ "$TYPE" == "force10" ]
+if [[ "$TYPE" == "force10" ]]
 then
 	echo "ip prefix-list $FILTERNAME"
 fi
@@ -110,17 +110,17 @@ fi
 # Format the output nicely
 for i in $IP_LIST
 do
-	if [ "$TYPE" == "juniper" ]
+	if [[ "$TYPE" == "juniper" ]]
 	then
 		echo "set policy-options policy-statement $FILTERNAME term auto-generated from route-filter $i exact"
-	elif [ "$TYPE" == "cisco" ]
+	elif [[ "$TYPE" == "cisco" ]]
 	then
 		echo "ip prefix-list $FILTERNAME $INC permit $i"
 		let INC=INC+10
-	elif [ "$TYPE" == "brocade" ]
+	elif [[ "$TYPE" == "brocade" ]]
 	then
 		echo "ip prefix-list $FILTERNAME permit $i"
-	elif [ "$TYPE" == "force10" ]
+	elif [[ "$TYPE" == "force10" ]]
 	then
 		echo " seq $INC permit $i"
 		let INC=INC+10
@@ -130,7 +130,7 @@ do
 done
 
 # Tell the Juniper router to accept those prefixes
-if [ "$TYPE" == "juniper" ]
+if [[ "$TYPE" == "juniper" ]]
 then
 	echo "set policy-options policy-statement $FILTERNAME term auto-generated then accept"
 fi
