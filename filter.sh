@@ -49,7 +49,7 @@ IS_SET=$(echo $1 | cut -c3 | grep -)
 # If we've got an AS-SET, use the handy !i and ,1 commands on RADB
 if [[ "-" == "$IS_SET" ]]
 then
-	AS_LIST=$(whois -h whois.radb.net \!i$1,1 | sed 2\!d)
+	AS_LIST=$(whois -h whois.radb.net \!i$1,1 | sed '/^\[/d' | sed 2\!d)
 else
 	AS_LIST=$1
 fi
@@ -57,7 +57,7 @@ fi
 # Find out which prefixes are contained within that AS number, from RADB
 for i in $AS_LIST
 do
-	IP_LIST+=$(whois -h whois.radb.net \!g$i | sed 2\!d)
+	IP_LIST+=$(whois -h whois.radb.net \!g$i | sed '/^\[/d' | sed 2\!d)
 	IP_LIST+=$(echo " ")
 done
 
