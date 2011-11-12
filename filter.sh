@@ -92,10 +92,10 @@ for i in $AS_LIST
 do
 	if [ "$IP_VERSION" == "4" ]
 	then
-		IP_LIST+=$(whois -h $WHOISSERVER -- "-i origin $i" | grep route: | cut -f 2 -d: | sed 's/ //g')
+		IP_LIST+=$(whois -h $WHOISSERVER -- "-i origin $i" | grep ^route: | cut -f 2 -d: | sed 's/ //g')
 	elif [ "$IP_VERSION" == "6" ]
 	then
-		IP_LIST+=$(whois -h $WHOISSERVER -- "-i origin $i" | grep route6: | cut -f 2- -d: | sed 's/ //g')
+		IP_LIST+=$(whois -h $WHOISSERVER -- "-i origin $i" | grep ^route6: | cut -f 2- -d: | sed 's/ //g')
 	fi
 	IP_LIST+=$(echo " ")
 done
