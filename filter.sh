@@ -8,12 +8,14 @@ usage()
 	echo "Usage: $0 [OPTS] AS-SET"
 	echo "    -t | --type [juniper | cisco | brocade | force10]"
 	echo "    -n | --name [Filter Name]"
+	echo "    -h | --host [WHOIS server]"
 }
 
 # Initialise some variables, to make it safe to use
 FILTERNAME="filter"
 INC=10
 IP_LIST=""
+WHOISSERVER="whois.radb.net"
 
 # Parse the command line options
 while [[ $1 = -* ]]; do
@@ -26,7 +28,11 @@ while [[ $1 = -* ]]; do
 			FILTERNAME="$2"
 			shift 2
 			;;
-		-h|--help)
+		-h|--host)
+			WHOISSERVER="$2"
+			shift 2
+			;;
+		--help)
 			usage
 			exit 1
 			;;
@@ -49,7 +55,7 @@ IS_SET=$(echo $1 | cut -c3 | grep -)
 # If we've got an AS-SET, use the handy !i and ,1 commands on RADB
 if [[ "-" == "$IS_SET" ]]
 then
-	AS_LIST=$(whois -h whois.radb.net \!i$1,1 | sed '/^\[/d' | sed 2\!d)
+	AS_LIST=$(whois -h $WHOISSERVER \!i$1,1 | sed '/^\[/d' | sed 2\!d)
 else
 	AS_LIST=$1
 fi
@@ -57,7 +63,7 @@ fi
 # Find out which prefixes are contained within that AS number, from RADB
 for i in $AS_LIST
 do
-	IP_LIST+=$(whois -h whois.radb.net \!g$i | sed '/^\[/d' | sed 2\!d)
+	IP_LIST+=$(whois -h $WHOISSERVER \!g$i | sed '/^\[/d' | sed 2\!d)
 	IP_LIST+=$(echo " ")
 done
 
