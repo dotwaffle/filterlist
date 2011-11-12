@@ -122,6 +122,7 @@ do
 	elif [ "$TYPE" == "force10" ]
 	then
 		echo " seq $INC permit $i"
+		let INC=INC+10
 	else
 		echo $i
 	fi
