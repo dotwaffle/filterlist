@@ -71,6 +71,7 @@ while [[ $1 = -* ]]; do
 	esac
 done
 
+# If no arguments, then just show the usage statement
 if [ $# -lt 1 ]
 	then usage
 	exit 1
