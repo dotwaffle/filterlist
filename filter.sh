@@ -102,7 +102,7 @@ do
 done
 
 # Remove duplicate routes
-IP_LIST=$(echo $IP_LIST_UNSORTED | sort | uniq)
+IP_LIST=$(printf "%s\n" $IP_LIST_UNSORTED | sort | uniq)
 
 # If we're on Force10, create the prefix-list
 if [[ "$TYPE" == "force10" ]]
