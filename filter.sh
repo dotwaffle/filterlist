@@ -2,6 +2,7 @@
 # filter.sh: Generates a filter list for a router based on an input AS-SET or ASN.
 
 # Copyright 2009-2011 Matthew Walster
+
 # Distributed under the terms of the GNU General Public Licence
 
 # This program is free software: you can redistribute it and/or modify
@@ -22,7 +23,7 @@ usage()
 {
 	echo "$0: A filterlist generator"
 	echo "Usage: $0 [OPTS] AS-SET"
-	echo "    -t | --type [juniper | cisco | brocade | force10]"
+	echo "    -t | --type [juniper | cisco | brocade | force10 | redback ]"
 	echo "    -n | --name [Filter Name]"
 	echo "    -h | --host [WHOIS server]"
 	echo "         --ipv4"
@@ -124,6 +125,10 @@ do
 	then
 		echo "ip prefix-list $FILTERNAME permit $i"
 	elif [[ "$TYPE" == "force10" ]]
+	then
+		echo " seq $INC permit $i"
+		let INC=INC+10
+	elif [[ "$TYPE" == "redback" ]]
 	then
 		echo " seq $INC permit $i"
 		let INC=INC+10
