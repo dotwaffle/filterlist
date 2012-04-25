@@ -23,9 +23,9 @@ usage()
 {
 	echo "$0: A filterlist generator"
 	echo "Usage: $0 [OPTS] AS-SET"
-	echo "    -t | --type [juniper | cisco | brocade | force10 | redback ]"
-	echo "    -n | --name [Filter Name]"
-	echo "    -h | --host [WHOIS server]"
+	echo "    -t | --type [ juniper | cisco | brocade | force10 | redback ]"
+	echo "    -n | --name [ Filter Name ]"
+	echo "    -h | --host [ WHOIS server ]"
 	echo "         --ipv4"
 	echo "         --ipv6"
 }
