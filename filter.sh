@@ -23,7 +23,7 @@ usage()
 {
 	echo "$0: A filterlist generator"
 	echo "Usage: $0 [OPTS] AS-SET"
-	echo "    -t | --type [ juniper | cisco | brocade | force10 | redback ]"
+	echo "    -t | --type [ juniper | cisco | brocade | force10 | redback | quagga ]"
 	echo "    -n | --name [ Filter Name ]"
 	echo "    -h | --host [ WHOIS server ]"
 	echo "         --ipv4"
@@ -132,6 +132,14 @@ do
 	then
 		echo " seq $INC permit $i"
 		let INC=INC+10
+	elif [[ "$TYPE" == "quagga" && "$IP_VERSION" == "6" ]]
+	then
+		echo "ipv6 prefix-list $FILTERNAME seq $INC permit $i"
+		let INC=INC+5
+	elif [[ "$TYPE" == "quagga" && "$IP_VERSION" == "4" ]]
+	then
+		echo "ip prefix-list $FILTERNAME seq $INC permit $i"
+	let INC=INC+5
 	else
 		echo $i
 	fi
