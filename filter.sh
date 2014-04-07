@@ -117,9 +117,13 @@ do
 	if [[ "$TYPE" == "juniper" ]]
 	then
 		echo "set policy-options policy-statement $FILTERNAME term auto-generated from route-filter $i exact"
-	elif [[ "$TYPE" == "cisco" ]]
+	elif [[ "$TYPE" == "cisco" && "$IP_VERSION" == "4" ]]
 	then
 		echo "ip prefix-list $FILTERNAME $INC permit $i"
+		let INC=INC+10
+	elif [[ "$TYPE" == "cisco" && "$IP_VERSION" == "6" ]]
+	then
+		echo "ipv6 prefix-list $FILTERNAME seq $INC permit $i"
 		let INC=INC+10
 	elif [[ "$TYPE" == "brocade" ]]
 	then
