@@ -92,13 +92,14 @@ fi
 # Find out which prefixes are contained within that AS number
 for i in $AS_LIST
 do
-	if [[ "$IP_VERSION" == "4" ]]
-	then
-		IP_LIST_UNSORTED+=$(whois -h $WHOISSERVER -- "-i origin $i" | grep ^route: | cut -f 2 -d: | sed 's/ //g')
-	elif [[ "$IP_VERSION" == "6" ]]
-	then
-		IP_LIST_UNSORTED+=$(whois -h $WHOISSERVER -- "-i origin $i" | grep ^route6: | cut -f 2- -d: | sed 's/ //g')
-	fi
+	case "$IP_VERSION" in
+		4)
+			IP_LIST_UNSORTED+=$(whois -h $WHOISSERVER -- "-i origin $i" | grep ^route: | cut -f 2 -d: | sed 's/ //g')
+			;;
+		6)
+			IP_LIST_UNSORTED+=$(whois -h $WHOISSERVER -- "-i origin $i" | grep ^route6: | cut -f 2- -d: | sed 's/ //g')
+			;;
+	esac
 	IP_LIST_UNSORTED+=$(echo " ")
 done
 
@@ -114,39 +115,47 @@ fi
 # Format the output nicely
 for i in $IP_LIST
 do
-	if [[ "$TYPE" == "juniper" ]]
-	then
-		echo "set policy-options policy-statement $FILTERNAME term auto-generated from route-filter $i exact"
-	elif [[ "$TYPE" == "cisco" && "$IP_VERSION" == "4" ]]
-	then
-		echo "ip prefix-list $FILTERNAME $INC permit $i"
-		let INC=INC+10
-	elif [[ "$TYPE" == "cisco" && "$IP_VERSION" == "6" ]]
-	then
-		echo "ipv6 prefix-list $FILTERNAME seq $INC permit $i"
-		let INC=INC+10
-	elif [[ "$TYPE" == "brocade" ]]
-	then
-		echo "ip prefix-list $FILTERNAME permit $i"
-	elif [[ "$TYPE" == "force10" ]]
-	then
-		echo " seq $INC permit $i"
-		let INC=INC+10
-	elif [[ "$TYPE" == "redback" ]]
-	then
-		echo " seq $INC permit $i"
-		let INC=INC+10
-	elif [[ "$TYPE" == "quagga" && "$IP_VERSION" == "6" ]]
-	then
-		echo "ipv6 prefix-list $FILTERNAME seq $INC permit $i"
-		let INC=INC+5
-	elif [[ "$TYPE" == "quagga" && "$IP_VERSION" == "4" ]]
-	then
-		echo "ip prefix-list $FILTERNAME seq $INC permit $i"
-	let INC=INC+5
-	else
-		echo $i
-	fi
+	case "$TYPE" in
+		juniper)
+			echo "set policy-options policy-statement $FILTERNAME term auto-generated from route-filter $i exact"
+			;;
+		cisco)
+			if [[ "$IP_VERSION" == "4" ]]
+			then
+				echo "ip prefix-list $FILTERNAME $INC permit $i"
+				let INC=INC+10
+			elif [[ "$IP_VERSION" == "6" ]]
+			then
+				echo "ipv6 prefix-list $FILTERNAME seq $INC permit $i"
+				let INC=INC+10
+			fi
+			;;
+		brocade)
+			echo "ip prefix-list $FILTERNAME permit $i"
+			;;
+		force10)
+			echo " seq $INC permit $i"
+			let INC=INC+10
+			;;
+		redback)
+			echo " seq $INC permit $i"
+			let INC=INC+10
+			;;
+		quagga)
+			if [[ "$IP_VERSION" == "4" ]]
+			then
+				echo "ip prefix-list $FILTERNAME seq $INC permit $i"
+				let INC=INC+5
+			elif [[ "$IP_VERSION" == "6" ]]
+			then
+				echo "ipv6 prefix-list $FILTERNAME seq $INC permit $i"
+				let INC=INC+5
+			fi
+			;;
+		*)
+			echo $i
+			;;
+	esac
 done
 
 # Tell the Juniper router to accept those prefixes
