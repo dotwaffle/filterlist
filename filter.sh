@@ -25,6 +25,7 @@ usage()
 	echo "Usage: $0 [OPTS] AS-SET"
 	echo "    -t | --type [ juniper | cisco | brocade | force10 | redback | quagga ]"
 	echo "    -n | --name [ Filter Name ]"
+	echo "    -g | --gen"
 	echo "    -h | --host [ WHOIS server ]"
 	echo "         --ipv4"
 	echo "         --ipv6"
@@ -32,6 +33,8 @@ usage()
 
 # Initialise some variables, to make it safe to use
 FILTERNAME="filter"
+FILTERNAMEGEN=0
+TERMNAME="auto-generated"
 INC=10
 IP_LIST=""
 WHOISSERVER="whois.radb.net"
@@ -47,6 +50,10 @@ while [[ $1 = -* ]]; do
 		-n|--name)
 			FILTERNAME="$2"
 			shift 2
+			;;
+		-g|--gen)
+			FILTERNAMEGEN=1
+			shift
 			;;
 		-h|--host)
 			WHOISSERVER="$2"
@@ -80,6 +87,11 @@ fi
 
 # Do we have an AS-SET or an ASN?
 IS_SET=$(echo $1 | cut -c3 | grep -)
+
+if [[ 1 == $FILTERNAMEGEN ]]
+then
+	FILTERNAME="${1}-${FILTERNAME}"
+fi
 
 # If we've got an AS-SET, use the handy !i and ,1 commands on RADB
 if [[ "-" == "$IS_SET" ]]
@@ -117,7 +129,7 @@ for i in $IP_LIST
 do
 	case "$TYPE" in
 		juniper)
-			echo "set policy-options policy-statement $FILTERNAME term auto-generated from route-filter $i exact"
+			echo "set policy-options policy-statement $FILTERNAME term $TERMNAME from route-filter $i exact"
 			;;
 		cisco)
 			if [[ "$IP_VERSION" == "4" ]]
