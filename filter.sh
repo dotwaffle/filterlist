@@ -26,6 +26,7 @@ usage()
 	echo "    -t | --type [ juniper | cisco | brocade | force10 | redback | quagga ]"
 	echo "    -n | --name [ Filter Name ]"
 	echo "    -g | --gen"
+	echo "    -a | --aggregate [ Max Len ]"
 	echo "    -h | --host [ WHOIS server ]"
 	echo "         --ipv4"
 	echo "         --ipv6"
@@ -34,6 +35,9 @@ usage()
 # Initialise some variables, to make it safe to use
 FILTERNAME="filter"
 FILTERNAMEGEN=0
+AGGREGATE=0
+AGGREGATELEN=24
+ROUTE_FILTER_MATCH="exact"
 TERMNAME="auto-generated"
 INC=10
 IP_LIST=""
@@ -54,6 +58,11 @@ while [[ $1 = -* ]]; do
 		-g|--gen)
 			FILTERNAMEGEN=1
 			shift
+			;;
+		-a|--aggregate)
+			AGGREGATE=1
+			AGGREGATELEN="$2"
+			shift 2
 			;;
 		-h|--host)
 			WHOISSERVER="$2"
@@ -118,6 +127,17 @@ done
 # Remove duplicate routes
 IP_LIST=$(printf "%s\n" $IP_LIST_UNSORTED | sort -t . -k 1,1n -k 2,2n -k 3,3n -k 4,4n | uniq)
 
+# Perform aggregation if requested and available
+if [[ 1 -eq $AGGREGATE ]]
+then
+	AGGREGATE=$(which aggregate)
+	if [[ -n "$AGGREGATE" ]]
+	then
+		IP_LIST=$(printf "%s\n" $IP_LIST | $AGGREGATE -q -m $AGGREGATELEN)
+		ROUTE_FILTER_MATCH="upto /$AGGREGATELEN"
+	fi
+fi
+
 # If we're on Force10 or Redback (which uses similar syntax), create the prefix-list
 if [[ "$TYPE" == "force10" || "$TYPE" == "redback" ]]
 then
@@ -134,7 +154,7 @@ for i in $IP_LIST
 do
 	case "$TYPE" in
 		juniper)
-			echo "set policy-options policy-statement $FILTERNAME term $TERMNAME from route-filter $i exact"
+			echo "set policy-options policy-statement $FILTERNAME term $TERMNAME from route-filter $i $ROUTE_FILTER_MATCH"
 			;;
 		cisco)
 			if [[ "$IP_VERSION" == "4" ]]
