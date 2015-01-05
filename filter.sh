@@ -178,7 +178,7 @@ done
 # Tell the Juniper router to accept those prefixes
 if [[ "$TYPE" == "juniper" ]]
 then
-	echo "set policy-options policy-statement $FILTERNAME term auto-generated then accept"
+	echo "set policy-options policy-statement $FILTERNAME term $TERMNAME then accept"
 	echo "set policy-options policy-statement $FILTERNAME then reject"
 fi
 
