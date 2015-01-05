@@ -124,6 +124,11 @@ then
 	echo "ip prefix-list $FILTERNAME"
 fi
 
+if [[ "$TYPE" == "juniper" ]]
+then
+	echo "set policy-options policy-statement $FILTERNAME term $TERMNAME from protocol bgp"
+fi
+
 # Format the output nicely
 for i in $IP_LIST
 do
@@ -174,5 +179,6 @@ done
 if [[ "$TYPE" == "juniper" ]]
 then
 	echo "set policy-options policy-statement $FILTERNAME term auto-generated then accept"
+	echo "set policy-options policy-statement $FILTERNAME then reject"
 fi
 
