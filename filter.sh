@@ -25,6 +25,8 @@ usage()
 	echo "Usage: $0 [OPTS] AS-SET"
 	echo "    -t | --type [ juniper | cisco | brocade | force10 | redback | quagga ]"
 	echo "    -n | --name [ Filter Name ]"
+	echo "    -g | --gen"
+	echo "    -a | --aggregate [ Max Len ]"
 	echo "    -h | --host [ WHOIS server ]"
 	echo "         --ipv4"
 	echo "         --ipv6"
@@ -32,6 +34,11 @@ usage()
 
 # Initialise some variables, to make it safe to use
 FILTERNAME="filter"
+FILTERNAMEGEN=0
+AGGREGATE=0
+AGGREGATELEN=24
+ROUTE_FILTER_MATCH="exact"
+TERMNAME="auto-generated"
 INC=10
 IP_LIST=""
 WHOISSERVER="whois.radb.net"
@@ -46,6 +53,15 @@ while [[ $1 = -* ]]; do
 			;;
 		-n|--name)
 			FILTERNAME="$2"
+			shift 2
+			;;
+		-g|--gen)
+			FILTERNAMEGEN=1
+			shift
+			;;
+		-a|--aggregate)
+			AGGREGATE=1
+			AGGREGATELEN="$2"
 			shift 2
 			;;
 		-h|--host)
@@ -81,6 +97,11 @@ fi
 # Do we have an AS-SET or an ASN?
 IS_SET=$(echo $1 | cut -c3 | grep -)
 
+if [[ 1 == $FILTERNAMEGEN ]]
+then
+	FILTERNAME="${1}-${FILTERNAME}"
+fi
+
 # If we've got an AS-SET, use the handy !i and ,1 commands on RADB
 if [[ "-" == "$IS_SET" ]]
 then
@@ -106,10 +127,26 @@ done
 # Remove duplicate routes
 IP_LIST=$(printf "%s\n" $IP_LIST_UNSORTED | sort -t . -k 1,1n -k 2,2n -k 3,3n -k 4,4n | uniq)
 
+# Perform aggregation if requested and available
+if [[ 1 -eq $AGGREGATE ]]
+then
+	AGGREGATE=$(which aggregate)
+	if [[ -n "$AGGREGATE" ]]
+	then
+		IP_LIST=$(printf "%s\n" $IP_LIST | $AGGREGATE -q -m $AGGREGATELEN)
+		ROUTE_FILTER_MATCH="upto /$AGGREGATELEN"
+	fi
+fi
+
 # If we're on Force10 or Redback (which uses similar syntax), create the prefix-list
 if [[ "$TYPE" == "force10" || "$TYPE" == "redback" ]]
 then
 	echo "ip prefix-list $FILTERNAME"
+fi
+
+if [[ "$TYPE" == "juniper" ]]
+then
+	echo "set policy-options policy-statement $FILTERNAME term $TERMNAME from protocol bgp"
 fi
 
 # Format the output nicely
@@ -117,7 +154,7 @@ for i in $IP_LIST
 do
 	case "$TYPE" in
 		juniper)
-			echo "set policy-options policy-statement $FILTERNAME term auto-generated from route-filter $i exact"
+			echo "set policy-options policy-statement $FILTERNAME term $TERMNAME from route-filter $i $ROUTE_FILTER_MATCH"
 			;;
 		cisco)
 			if [[ "$IP_VERSION" == "4" ]]
@@ -161,6 +198,7 @@ done
 # Tell the Juniper router to accept those prefixes
 if [[ "$TYPE" == "juniper" ]]
 then
-	echo "set policy-options policy-statement $FILTERNAME term auto-generated then accept"
+	echo "set policy-options policy-statement $FILTERNAME term $TERMNAME then accept"
+	echo "set policy-options policy-statement $FILTERNAME then reject"
 fi
 
