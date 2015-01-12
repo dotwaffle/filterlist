@@ -38,25 +38,22 @@ Usage: ./filter.sh [OPTS] AS-SET
 
 ### Examples
 
-**Generate a Juniper IPv4 filter list for AS2**
+**Generate a Cisco IPv4 filter list for AS2**
 ```bash
-$ ./filter.sh --type juniper --ipv4 2
-set policy-options policy-statement filter term auto-generated from protocol bgp
-set policy-options policy-statement filter term auto-generated from route-filter 1.1.2.0/24 exact
-set policy-options policy-statement filter term auto-generated from route-filter 2.0.0.0/16 exact
-set policy-options policy-statement filter term auto-generated from route-filter 64.62.96.0/24 exact
-set policy-options policy-statement filter term auto-generated from route-filter 201.62.50.0/24 exact
-set policy-options policy-statement filter term auto-generated from route-filter 201.62.51.0/24 exact
-set policy-options policy-statement filter term auto-generated from route-filter 201.71.32.0/24 exact
-set policy-options policy-statement filter term auto-generated from route-filter 201.71.33.0/24 exact
-set policy-options policy-statement filter term auto-generated from route-filter 201.71.34.0/24 exact
-set policy-options policy-statement filter term auto-generated from route-filter 201.71.35.0/24 exact
-set policy-options policy-statement filter term auto-generated from route-filter 205.143.159.0/24 exact
-set policy-options policy-statement filter term auto-generated then accept
-set policy-options policy-statement filter then reject
+$ ./filter.sh --type cisco --ipv4 2
+ip prefix-list filter 10 permit 1.1.2.0/24
+ip prefix-list filter 20 permit 2.0.0.0/16
+ip prefix-list filter 30 permit 64.62.96.0/24
+ip prefix-list filter 40 permit 201.62.50.0/24
+ip prefix-list filter 50 permit 201.62.51.0/24
+ip prefix-list filter 60 permit 201.71.32.0/24
+ip prefix-list filter 70 permit 201.71.33.0/24
+ip prefix-list filter 80 permit 201.71.34.0/24
+ip prefix-list filter 90 permit 201.71.35.0/24
+ip prefix-list filter 100 permit 205.143.159.0/24
 ```
 
-**Generate an Aggregated Cisco IPv4 filter list for AS2**
+**Generate an Aggregated IPv4 filter list for AS2**
 ```bash
 $ ./filter.sh --type juniper -a 24 --ipv4 AS2
 set policy-options policy-statement filter term auto-generated from protocol bgp
