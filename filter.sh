@@ -122,7 +122,7 @@ do
 		cisco)
 			if [[ "$IP_VERSION" == "4" ]]
 			then
-				echo "ip prefix-list $FILTERNAME $INC permit $i"
+				echo "ip prefix-list $FILTERNAME seq $INC permit $i"
 				let INC=INC+10
 			elif [[ "$IP_VERSION" == "6" ]]
 			then
