@@ -32,7 +32,8 @@ usage()
 
 # Initialise some variables, to make it safe to use
 FILTERNAME="filter"
-INC=10
+SEQNUM=10
+INC=5
 IP_LIST=""
 WHOISSERVER="whois.radb.net"
 IP_VERSION="4"
@@ -51,6 +52,11 @@ while [[ $1 = -* ]]; do
 		-h|--host)
 			WHOISSERVER="$2"
 			shift 2
+			;;
+		-s|--seq)
+			SEQNUM="$2"
+			INC="$3"
+			shift 3
 			;;
 		--ipv4)
 			IP_VERSION="4"
@@ -122,34 +128,34 @@ do
 		cisco)
 			if [[ "$IP_VERSION" == "4" ]]
 			then
-				echo "ip prefix-list $FILTERNAME seq $INC permit $i"
-				let INC=INC+10
+				echo "ip prefix-list $FILTERNAME seq $SEQNUM permit $i"
+				let SEQNUM=SEQNUM+$INC
 			elif [[ "$IP_VERSION" == "6" ]]
 			then
-				echo "ipv6 prefix-list $FILTERNAME seq $INC permit $i"
-				let INC=INC+10
+				echo "ipv6 prefix-list $FILTERNAME seq $SEQNUM permit $i"
+				let SEQNUM=SEQNUM+$INC
 			fi
 			;;
 		brocade)
 			echo "ip prefix-list $FILTERNAME permit $i"
 			;;
 		force10)
-			echo " seq $INC permit $i"
-			let INC=INC+10
+			echo " seq $SEQNUM permit $i"
+			let SEQNUM=SEQNUM+$INC
 			;;
 		redback)
-			echo " seq $INC permit $i"
-			let INC=INC+10
+			echo " seq $SEQNUM permit $i"
+			let SEQNUM=SEQNUM+$INC
 			;;
 		quagga)
 			if [[ "$IP_VERSION" == "4" ]]
 			then
-				echo "ip prefix-list $FILTERNAME seq $INC permit $i"
-				let INC=INC+5
+				echo "ip prefix-list $FILTERNAME seq $SEQNUM permit $i"
+				let SEQNUM=SEQNUM+$INC
 			elif [[ "$IP_VERSION" == "6" ]]
 			then
-				echo "ipv6 prefix-list $FILTERNAME seq $INC permit $i"
-				let INC=INC+5
+				echo "ipv6 prefix-list $FILTERNAME seq $SEQNUM permit $i"
+				let SEQNUM=SEQNUM+$INC
 			fi
 			;;
 		*)
