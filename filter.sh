@@ -37,6 +37,7 @@ INC=5
 IP_LIST=""
 WHOISSERVER="whois.radb.net"
 IP_VERSION="4"
+CRAZY="0"
 
 # Parse the command line options
 while [[ $1 = -* ]]; do
@@ -64,6 +65,10 @@ while [[ $1 = -* ]]; do
 			;;
 		--ipv6)
 			IP_VERSION="6"
+			shift
+			;;
+		--crazy)
+			CRAZY="1"
 			shift
 			;;
 		--help)
@@ -95,19 +100,47 @@ else
 	AS_LIST=$1
 fi
 
-# Find out which prefixes are contained within that AS number
-for i in $AS_LIST
-do
+if [[ $CRAZY == 0 ]]
+then
+	# Find out which prefixes are contained within that AS number
+	for i in $AS_LIST
+	do
+		case "$IP_VERSION" in
+			4)
+				IP_LIST_UNSORTED+=$(whois -h $WHOISSERVER -- "-i origin $i" | grep ^route: | cut -f 2 -d: | sed 's/ //g')
+				;;
+			6)
+				IP_LIST_UNSORTED+=$(whois -h $WHOISSERVER -- "-i origin $i" | grep ^route6: | cut -f 2- -d: | sed 's/ //g')
+				;;
+		esac
+		IP_LIST_UNSORTED+=$(echo " ")
+	done
+elif [[ $CRAZY == 1 ]]
+then
+	tmpfile=$(mktemp /tmp/filter.XXXXXXXX) || exit 1
 	case "$IP_VERSION" in
 		4)
-			IP_LIST_UNSORTED+=$(whois -h $WHOISSERVER -- "-i origin $i" | grep ^route: | cut -f 2 -d: | sed 's/ //g')
+			curl ftp://ftp.ripe.net/ripe/dbase/split/ripe.db.route.gz \
+				| gunzip -dc \
+				| grep -e '^route:' -e '^origin:' \
+				| sed -e 'N;s/\n/ /' -re 's/route:\s+//g;s/origin:\s+//g' \
+				>$tmpfile
+			GREP_OPTS=$(sed -re 's/AS/ -e AS/g' <<<$AS_LIST)
+			IP_LIST_UNSORTED=$(grep $GREP_OPTS $tmpfile | cut -f1 -d" ")
 			;;
 		6)
-			IP_LIST_UNSORTED+=$(whois -h $WHOISSERVER -- "-i origin $i" | grep ^route6: | cut -f 2- -d: | sed 's/ //g')
+			curl ftp://ftp.ripe.net/ripe/dbase/split/ripe.db.route6.gz \
+				| gunzip -dc \
+				| grep -e '^route:' -e '^origin:' \
+				| sed -e 'N;s/\n/ /' -re 's/route6:\s+//g;s/origin:\s+//g' \
+				>$tmpfile
+			GREP_OPTS=$(sed -re 's/AS/ -e AS/g' <<<$AS_LIST)
+			IP_LIST_UNSORTED=$(grep $GREP_OPTS $tmpfile | cut -f1 -d" ")
 			;;
 	esac
-	IP_LIST_UNSORTED+=$(echo " ")
-done
+
+	rm $tmpfile
+fi
 
 # Remove duplicate routes
 IP_LIST=$(printf "%s\n" $IP_LIST_UNSORTED | sort -t . -k 1,1n -k 2,2n -k 3,3n -k 4,4n | uniq)
