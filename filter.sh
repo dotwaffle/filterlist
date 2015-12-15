@@ -23,7 +23,7 @@ usage()
 {
 	echo "$0: A filterlist generator"
 	echo "Usage: $0 [OPTS] AS-SET"
-	echo "    -t | --type [ juniper | cisco | brocade | force10 | redback | quagga ]"
+	echo "    -t | --type [ juniper | cisco | brocade | force10 | redback | quagga | iosxr ]"
 	echo "    -n | --name [ Filter Name ]"
 	echo "    -h | --host [ WHOIS server ]"
 	echo "         --ipv4"
@@ -149,8 +149,12 @@ IP_LIST=$(printf "%s\n" $IP_LIST_UNSORTED | sort -t . -k 1,1n -k 2,2n -k 3,3n -k
 if [[ "$TYPE" == "force10" || "$TYPE" == "redback" ]]
 then
 	echo "ip prefix-list $FILTERNAME"
+elif [[ "$TYPE" == "iosxr" ]]
+then
+	echo "prefix-set $FILTERNAME"
 fi
 
+FIRST=1
 # Format the output nicely
 for i in $IP_LIST
 do
@@ -180,6 +184,14 @@ do
 			echo " seq $SEQNUM permit $i"
 			let SEQNUM=SEQNUM+$INC
 			;;
+		iosxr)
+			if [[ $FIRST -eq 0 ]];
+			then
+				echo ","
+			fi
+
+			echo -n "$i"
+			;;
 		quagga)
 			if [[ "$IP_VERSION" == "4" ]]
 			then
@@ -195,7 +207,16 @@ do
 			echo $i
 			;;
 	esac
+
+	FIRST=0
 done
+
+if [[ "$TYPE" == "iosxr" ]]
+then
+	echo ""
+	echo "end-set"
+	echo "!"
+fi
 
 # Tell the Juniper router to accept those prefixes
 if [[ "$TYPE" == "juniper" ]]
